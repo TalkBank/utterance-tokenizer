@@ -1,0 +1,5 @@
+* utterance-tokenizer
+A NER-like BERT model trainable/trained on TalkBank data that performs the task of utterance tokenization. This is used to add punctuation and tokenization to ADR outputs in the pipeline to process raw audio data into usable transcripts for TalkBank.
+
+Utterance tokenization is notably different from sentence tokenization; for the definition of a speech utterance, refer to the [[https://talkbank.org/manuals/CHAT.pdf][CHAT spec]].
+
