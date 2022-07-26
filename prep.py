@@ -43,6 +43,10 @@ def read_file(f):
     # return results
     return results
 
+# prep all the files
+cleaned_files = sum([read_file(i) for i in chat_files], [])
 
+with open("./data/Pitt.txt", 'w') as df:
+    df.writelines([i+'\n' for i in cleaned_files])
 
 
