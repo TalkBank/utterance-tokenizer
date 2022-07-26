@@ -3,3 +3,4 @@ A NER-like BERT model trainable/trained on TalkBank data that performs the task 
 
 Utterance tokenization is notably different from sentence tokenization; for the definition of a speech utterance, refer to the [[https://talkbank.org/manuals/CHAT.pdf][CHAT spec]].
 
+Refer to the [[https://www.github.com/talkbank/batchalign/][batchalign]] repository for the usage of a trained model
