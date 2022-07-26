@@ -10,8 +10,9 @@ import torch
 from torch.utils.data import dataset 
 from torch.utils.data.dataloader import DataLoader
 
-# import bert
+# import huggingface utils
 from transformers import AutoTokenizer, BertForTokenClassification
+from transformers import DataCollatorForTokenClassification
 
 # tqdm
 from tqdm import tqdm
