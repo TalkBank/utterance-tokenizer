@@ -36,8 +36,8 @@ TOKENS = {
 
 # weights and biases
 hyperparametre_defaults = dict(
-    learning_rate = 3.5e-6,
-    batch_size = 4,
+    learning_rate = 3.5e-5,
+    batch_size = 32,
     epochs = 3,
     window = 10
 )
