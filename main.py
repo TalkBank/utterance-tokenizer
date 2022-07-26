@@ -43,8 +43,8 @@ hyperparametre_defaults = dict(
 )
 
 # start wandb
-# run = wandb.init(project='utok', entity='jemoka', config=hyperparametre_defaults, mode="disabled")
-run = wandb.init(project='utok', entity='jemoka', config=hyperparametre_defaults)
+run = wandb.init(project='utok', entity='jemoka', config=hyperparametre_defaults, mode="disabled")
+# run = wandb.init(project='utok', entity='jemoka', config=hyperparametre_defaults)
 
 # set configuration
 config = run.config
