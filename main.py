@@ -1,6 +1,7 @@
 # system utilities
 import re
 import string
+import random
 
 # tokenization utilitise
 from nltk import word_tokenize
@@ -9,6 +10,7 @@ from nltk import word_tokenize
 import torch
 from torch.utils.data import dataset 
 from torch.utils.data.dataloader import DataLoader
+from torch.optim import AdamW
 
 # import huggingface utils
 from transformers import AutoTokenizer, BertForTokenClassification
@@ -26,10 +28,10 @@ DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 TOKENS = {
     "U": 0, # normal word
     "OC": 1, # first capital
-    "E.": 3, # period
-    "E?": 4, # question mark
-    "E!": 5, # exclaimation mark
-    "E,": 6, # exclaimation mark
+    "E.": 2, # period
+    "E?": 3, # question mark
+    "E!": 4, # exclaimation mark
+    "E,": 5, # exclaimation mark
 }
 
 # weights and biases
@@ -151,11 +153,11 @@ class UtteranceBoundaryDataset(dataset.Dataset):
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 # load the data (train using MICASE, test on Pitt)
-train_data = UtteranceBoundaryDataset("./data/MICASE.txt", tokenizer, window=config.window)
+train_data = UtteranceBoundaryDataset("./data/AphasiaBankEnglishProtocol.txt", tokenizer, window=config.window)
 test_data = UtteranceBoundaryDataset("./data/Pitt.txt", tokenizer, window=config.window)
 
 # create data collator utility on the tokenizer
-data_collator = DataCollatorForTokenClassification(tokenizer)
+data_collator = DataCollatorForTokenClassification(tokenizer, return_tensors='pt')
 
 # load the data
 train_dataloader = iter(DataLoader(train_data,
@@ -165,6 +167,61 @@ test_dataloader = iter(DataLoader(test_data,
                                   batch_size=config.batch_size,
                                   shuffle=True, collate_fn=lambda x:x))
 
-# create the model
-model = BertForTokenClassification.from_pretrained("bert-base-uncased", num_labels=len(TOKENS))
+# create the model and tokenizer
+model = BertForTokenClassification.from_pretrained("bert-base-uncased",
+                                                   num_labels=len(TOKENS)).to(DEVICE)
+optim = AdamW(model.parameters(), lr=config.learning_rate)
+
+# utility to move a whole dictionary to a device
+def move_dict(d, device):
+    """move a dictionary to device
+
+    Attributes:
+        d (dict): dictionary to move
+        device (torch.Device): device to move to
+    """
+
+    for key, value in d.items():
+        d[key] = d[key].to(device)
+
+# start training!
+val_data = list(iter(test_dataloader))
+
+# for each epoch
+for epoch in range(config.epochs):
+    print(f"Training epoch {epoch}")
+
+    # for each batch
+    for indx, batch in tqdm(enumerate(iter(train_dataloader)), total=len(train_dataloader)):
+        # pad and conform batch
+        batch = data_collator(batch)
+        move_dict(batch, DEVICE)
+
+        # train!
+        output = model(**batch)
+        # backprop
+        output.loss.backward()
+        # step
+        optim.step()
+        optim.zero_grad()
+
+        # log!
+        run.log({
+            'loss': output.loss.cpu().item()
+        })
+
+        # if need to validate, validate
+        if indx % 10 == 0:
+            # select a val batch
+            val_batch = data_collator(random.choice(val_data))
+            # run!
+            output = model(**val_batch)
+            # log!
+            run.log({
+                'val_loss': output.loss.cpu().item()
+            })
+
+# write model down
+model.save_pretrained(f"./models/{run.name}")
+tokenizer.save_pretrained(f"./models/{run.name}")
 
