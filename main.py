@@ -214,6 +214,7 @@ for epoch in range(config.epochs):
         if indx % 10 == 0:
             # select a val batch
             val_batch = data_collator(random.choice(val_data))
+            move_dict(val_batch, DEVICE)
             # run!
             output = model(**val_batch)
             # log!
