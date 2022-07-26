@@ -7,12 +7,19 @@ from nltk import word_tokenize
 
 # torch
 import torch
-from torch.utils.data import dataset, dataloader
+from torch.utils.data import dataset 
+from torch.utils.data.dataloader import DataLoader
 
 # import bert
 from transformers import AutoTokenizer, BertForTokenClassification
 
-# seed device
+# tqdm
+from tqdm import tqdm
+
+# wandb
+import wandb
+
+# seed device and tokens
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 TOKENS = {
@@ -24,6 +31,21 @@ TOKENS = {
     "E,": 6, # exclaimation mark
 }
 
+# weights and biases
+hyperparametre_defaults = dict(
+    learning_rate = 3.5e-6,
+    batch_size = 4,
+    epochs = 3,
+    window = 10
+)
+
+# start wandb
+run = wandb.init(project='jemoka', entity='utok', config=hyperparametre_defaults, mode="disabled")
+# run = wandb.init(project='jemoka', entity='utok', config=hyperparametre_defaults)
+
+# set configuration
+config = run.config
+
 # create the dataset loading function
 class UtteranceBoundaryDataset(dataset.Dataset):
     raw_data: list[str]
@@ -32,7 +54,8 @@ class UtteranceBoundaryDataset(dataset.Dataset):
     window: int
 
     # initalization function (to read data, etc.)
-    def __init__(self, f, tokenizer, window=10, max_length=100):
+    # max length doesn't matter
+    def __init__(self, f, tokenizer, window=10, max_length=1000):
         # read the file
         with open(f, 'r') as df:
             d =  df.readlines()
@@ -123,10 +146,24 @@ class UtteranceBoundaryDataset(dataset.Dataset):
     def __len__(self):
         return len(self.raw_data)//self.window
 
+# create the tokenizer 
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-data = UtteranceBoundaryDataset("./data/Pitt.txt", tokenizer)
-data[10]
 
-data("hello, I am one of those people. What's happening here?")
-tokenizer.convert_ids_to_tokens(data("hello, I am one of those people. What's happening here?")["input_ids"])
+# load the data (train using MICASE, test on Pitt)
+train_data = UtteranceBoundaryDataset("./data/MICASE.txt", tokenizer, window=config.window)
+test_data = UtteranceBoundaryDataset("./data/Pitt.txt", tokenizer, window=config.window)
+
+# create data collator utility on the tokenizer
+data_collator = DataCollatorForTokenClassification(tokenizer)
+
+# load the data
+train_dataloader = iter(DataLoader(train_data,
+                                   batch_size=config.batch_size,
+                                   shuffle=True, collate_fn=lambda x:x))
+test_dataloader = iter(DataLoader(test_data,
+                                  batch_size=config.batch_size,
+                                  shuffle=True, collate_fn=lambda x:x))
+
+# create the model
+model = BertForTokenClassification.from_pretrained("bert-base-uncased", num_labels=len(TOKENS))
 

@@ -5,7 +5,7 @@ import glob
 import string
 
 # set directory to prepare
-DIR = "./data/Pitt/*.txt"
+DIR = "./data/MICASE/*.txt" # (output of flo "+t*" +ca *.cha)
 WINDOW = 10 # we will train with a window of 10 utterances
 
 # search for all chat files
@@ -46,7 +46,7 @@ def read_file(f):
 # prep all the files
 cleaned_files = sum([read_file(i) for i in chat_files], [])
 
-with open("./data/Pitt.txt", 'w') as df:
+with open("./data/MICASE.txt", 'w') as df:
     df.writelines([i+'\n' for i in cleaned_files])
 
 
