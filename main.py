@@ -31,7 +31,7 @@ TOKENS = {
     "E.": 2, # period
     "E?": 3, # question mark
     "E!": 4, # exclaimation mark
-    "E,": 5, # exclaimation mark
+    "E,": 5, # comma
 }
 
 # weights and biases
