@@ -6,7 +6,6 @@ import string
 
 # set directory to prepare
 DIR = "./data/AphasiaBankEnglishProtocol/*.txt" # (output of flo "+t*" +ca *.cha)
-WINDOW = 10 # we will train with a window of 10 utterances
 
 # search for all chat files
 chat_files = glob.glob(DIR)
