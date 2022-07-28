@@ -39,7 +39,7 @@ hyperparametre_defaults = dict(
     learning_rate = 3.5e-5,
     batch_size = 12,
     epochs = 1,
-    window = 10
+    window = 20
 )
 
 # start wandb
