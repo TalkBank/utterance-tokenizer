@@ -38,8 +38,8 @@ TOKENS = {
 hyperparametre_defaults = dict(
     learning_rate = 3.5e-5,
     batch_size = 5,
-    epochs = 1,
-    window = 15 
+    epochs = 2,
+    window = 20 
 )
 
 # start wandb
@@ -142,7 +142,7 @@ class UtteranceBoundaryDataset(dataset.Dataset):
     # get a certain item
     def __getitem__(self, index):
         # get the raw data shifted by sentence
-        sents = self.raw_data[index*self.window:index*self.window+self.window]
+        sents = self.raw_data[index*self.window:index*self.window+random.randint(1, self.window)]
         # prepare the sentence and return
         return self(" ".join(sents))
 
